@@ -1,0 +1,122 @@
+[
+  {
+    "id": "mean-state-0",
+    "tex": "\\bar{\\mathbf{x}}_0",
+    "alt": "Mean initial state x bar zero"
+  },
+  {
+    "id": "mean-state-t",
+    "tex": "\\bar{\\mathbf{x}}_t",
+    "alt": "Mean state x bar t"
+  },
+  {
+    "id": "mean-state-1",
+    "tex": "\\bar{\\mathbf{x}}_1",
+    "alt": "Mean endpoint state x bar one"
+  },
+  {
+    "id": "state-variance-t",
+    "tex": "\\operatorname{Var}[\\mathbf{x}_t]",
+    "alt": "Propagated state variance at time t"
+  },
+  {
+    "id": "state-variance-1",
+    "tex": "\\operatorname{Var}[\\mathbf{x}_1]",
+    "alt": "Propagated endpoint state variance"
+  },
+  {
+    "id": "initial-variance",
+    "tex": "\\operatorname{Var}[\\mathbf{x}_0]=\\mathbf{0}",
+    "alt": "Initial state variance equals zero"
+  },
+  {
+    "id": "state-time",
+    "tex": "(\\bar{\\mathbf{x}}_t,t)",
+    "alt": "Current mean state and time"
+  },
+  {
+    "id": "velocity-mean",
+    "tex": "\\bar{u}^{\\theta}_t",
+    "alt": "Predicted velocity mean"
+  },
+  {
+    "id": "velocity-variance",
+    "tex": "(\\sigma^{\\theta}_t)^2",
+    "alt": "Predicted velocity variance"
+  },
+  {
+    "id": "conditional-sigma",
+    "tex": "\\sigma^{\\theta}_{t,y}",
+    "alt": "Conditional velocity standard deviation"
+  },
+  {
+    "id": "unconditional-sigma",
+    "tex": "\\sigma^{\\theta}_{t,\\varnothing}",
+    "alt": "Unconditional velocity standard deviation"
+  },
+  {
+    "id": "optimal-scale",
+    "tex": "\\lambda_{\\mathrm{opt}}\\geq 0",
+    "alt": "Nonnegative optimal guidance scale"
+  },
+  {
+    "id": "guidance-cap",
+    "tex": "\\lambda^*=\\min(\\lambda_{\\mathrm{opt}},\\lambda_{\\max})",
+    "alt": "Guidance scale is capped at lambda max"
+  },
+  {
+    "id": "mean-dynamics",
+    "tex": "\\frac{d\\bar{\\mathbf{x}}_t}{dt}=\\bar{u}^{\\theta}_t(\\bar{\\mathbf{x}}_t)",
+    "alt": "Time derivative of the mean state equals the predicted mean velocity evaluated at that mean state"
+  },
+  {
+    "id": "variance-propagation",
+    "tex": "\\operatorname{Var}[\\mathbf{x}_{t+\\Delta t}]\\approx\\operatorname{Var}[\\mathbf{x}_t]+\\big(\\sigma_t^\\theta(\\bar{\\mathbf{x}}_t)\\,\\Delta t\\big)^2+2\\Delta t\\,\\operatorname{Cov}\\!\\big(\\mathbf{x}_t,u_t^\\theta(\\mathbf{x}_t)\\big).",
+    "alt": "Approximate state variance update equals the current variance plus squared velocity uncertainty times the time step squared, plus twice the time step times state velocity covariance"
+  },
+  {
+    "id": "ug-velocity",
+    "tex": "\\bar{u}_{t,\\mathrm{UG}}^\\theta(\\bar{\\mathbf{x}}_t)=\\bar{u}_t^\\theta(\\bar{\\mathbf{x}}_t)+b_t w\\nabla_{\\bar{\\mathbf{x}}_t}f\\!\\big((\\sigma_t^\\theta(\\bar{\\mathbf{x}}_t))^2\\big).",
+    "alt": "UG adds a scaled state gradient of the variance objective to the predicted velocity mean"
+  },
+  {
+    "id": "ucfg-velocity",
+    "tex": "\\bar{u}_{t,\\mathrm{UCFG}}^\\theta(\\bar{\\mathbf{x}}_t\\mid y)=(1+\\lambda^*)\\bar{u}_t^\\theta(\\bar{\\mathbf{x}}_t\\mid y)-\\lambda^*\\bar{u}_t^\\theta(\\bar{\\mathbf{x}}_t\\mid\\varnothing).",
+    "alt": "UCFG extrapolates conditional and unconditional mean velocities using the adaptive guidance scale lambda star"
+  },
+  {
+    "id": "ug-scales",
+    "tex": "w\\in\\{0,10,30,50\\}",
+    "alt": "UG scale takes values zero, ten, thirty and fifty"
+  },
+  {
+    "id": "ucfg-scales",
+    "tex": "\\lambda_{\\max}\\in\\{0,1,2,5,10,20\\}",
+    "alt": "Maximum UCFG scale takes values zero, one, two, five, ten and twenty"
+  },
+  {
+    "id": "ug-strength",
+    "tex": "w",
+    "alt": "UG guidance strength"
+  },
+  {
+    "id": "path-coefficient",
+    "tex": "b_t",
+    "alt": "Path dependent coefficient b t"
+  },
+  {
+    "id": "lambda-opt",
+    "tex": "\\lambda_{\\mathrm{opt}}\\geq0",
+    "alt": "Nonnegative optimal guidance scale"
+  },
+  {
+    "id": "lambda-max",
+    "tex": "\\lambda_{\\max}",
+    "alt": "Maximum guidance scale"
+  },
+  {
+    "id": "fixed-scale",
+    "tex": "\\lambda",
+    "alt": "Fixed classifier-free guidance scale"
+  }
+]

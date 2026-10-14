@@ -1,0 +1,17 @@
+{
+  "name": "ua-flow-project-page",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Draft research project page for UA-Flow",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "render:math": "python3 scripts/render-math.py",
+    "check": "node --check app.js && node --check scripts/serve.mjs && node --check scripts/build.mjs"
+  }
+}
