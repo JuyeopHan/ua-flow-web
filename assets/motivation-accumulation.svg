@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="220" viewBox="0 0 300 220" fill="none">
+  <path d="M192 49 C202 24 244 24 267 42 C289 61 283 88 261 100 C235 114 207 105 191 85 C182 74 184 60 192 49Z" fill="#edf5f1" stroke="#cbded3"/>
+  <g font-family="Arial, sans-serif" font-size="11">
+    <text x="235" y="58" text-anchor="middle" fill="#527967">Data-supported</text>
+    <text x="235" y="74" text-anchor="middle" fill="#527967">region</text>
+    <path d="M34 173 C80 171 105 132 147 114 C179 100 192 94 215 90" stroke="#7e8a97" stroke-width="2.3" stroke-dasharray="6 5"/>
+    <path d="M34 173 C80 171 105 142 147 139 C183 136 212 157 257 172" stroke="#2464ad" stroke-width="2.8"/>
+    <path d="M147 114 147 139 M185 99 185 143" stroke="#bd8739" stroke-width="1.4" stroke-dasharray="3 4"/>
+    <path d="M222 102 255 157" stroke="#bd8739" stroke-width="1.4" stroke-dasharray="3 4"/>
+    <circle cx="34" cy="173" r="5" fill="#fff" stroke="#536c87" stroke-width="1.8"/>
+    <circle cx="215" cy="90" r="4" fill="#fff" stroke="#7e8a97" stroke-width="1.6"/>
+    <circle cx="257" cy="172" r="4.5" fill="#2464ad"/>
+    <text x="38" y="92" fill="#66717e">Unknown reference flow</text>
+    <text x="76" y="179" fill="#2464ad">Learned flow</text>
+    <text x="17" y="204" fill="#66717e">Initial state</text>
+    <text x="273" y="204" text-anchor="end" fill="#2464ad">Generated sample</text>
+  </g>
+</svg>

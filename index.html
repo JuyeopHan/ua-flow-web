@@ -18,7 +18,7 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <nav class="site-nav" aria-label="Page navigation">
     <a class="wordmark" href="#top" aria-label="UA-Flow home"><span class="flow-mark" aria-hidden="true">∿</span> UA-Flow</a>
-    <div class="nav-links"><a href="#method">Method</a><a href="#explore">Explore</a><a href="#results">Results</a><a href="#citation">BibTeX</a></div>
+    <div class="nav-links"><a href="#abstract">Abstract</a><a href="#motivation">Motivation</a><a href="#method">Method</a><a href="#results">Results</a></div>
     <a class="nav-code" href="https://github.com/JuyeopHan/UA-Flow">Code <span aria-hidden="true">↗</span></a>
   </nav>
 
@@ -53,10 +53,37 @@
       </div>
     </section>
 
+    <section class="motivation-section" id="motivation" aria-labelledby="motivation-title">
+      <div class="reading-width">
+        <h2 id="motivation-title">Motivation</h2>
+        <p>In practice, various factors such as finite training data, limited model capacity, and optimization error introduce local errors in the learned velocity field. As these errors accumulate along the ODE trajectory, they can divert generated samples away from regions supported by the data distribution. If the true marginal velocity were known, we could measure its discrepancy from the learned mean velocity at each state and time, and assess how the effects of these discrepancies accumulate along the flow. However, the true marginal velocity is intractable. UA-Flow therefore models these velocity discrepancies probabilistically and propagates the resulting uncertainty through the flow dynamics to quantify sample-level uncertainty.</p>
+      </div>
+      <figure class="motivation-figure container" aria-labelledby="motivation-figure-caption">
+        <div class="motivation-diagram">
+          <div class="motivation-panel">
+            <h3>Local velocity error</h3>
+            <img src="assets/motivation-local-error.svg" width="300" height="220" alt="At the same state and time, the learned mean velocity and the unknown true marginal velocity can point in different directions. Their discrepancy is unknown.">
+            <p>The true marginal velocity is unavailable, so the local error cannot be measured directly.</p>
+          </div>
+          <div class="motivation-panel">
+            <h3>Accumulation along the flow</h3>
+            <img src="assets/motivation-accumulation.svg" width="300" height="220" alt="Two schematic trajectories start at the same initial state. The unknown reference flow reaches a data-supported region, while the learned flow drifts away as local errors accumulate.">
+            <p>Local errors affect subsequent states and can move the generated sample away from data support.</p>
+          </div>
+          <div class="motivation-panel">
+            <h3>Quantifying uncertainty</h3>
+            <img src="assets/motivation-uncertainty.svg" width="300" height="220" alt="Along the learned mean trajectory, a schematic amber uncertainty envelope begins at zero width at the initial state and widens toward the generated endpoint, representing propagated uncertainty.">
+            <p>UA-Flow models velocity discrepancies probabilistically and propagates their uncertainty.</p>
+          </div>
+        </div>
+        <figcaption id="motivation-figure-caption">Schematic illustration. The true marginal velocity and reference flow (dashed gray) are unavailable in practice. Blue shows the learned mean; amber shows the unknown velocity discrepancy (left) and modeled, propagated uncertainty (right).</figcaption>
+      </figure>
+    </section>
+
     <section class="section container" id="method" aria-labelledby="method-title">
-      <div class="section-heading"><p class="eyebrow">THE METHOD</p><h2 id="method-title">Uncertainty quantification and guidance</h2><p>UA-Flow predicts a velocity mean and heteroscedastic variance.</p></div>
+      <div class="section-heading"><h2 id="method-title">Method</h2><p>UA-Flow predicts a velocity mean and heteroscedastic variance.</p></div>
       <section class="method-part" aria-labelledby="quantification-title">
-      <div class="method-part-heading"><p class="eyebrow">QUANTIFY & ASSESS</p><h3 id="quantification-title">Uncertainty quantification</h3><p>A lightweight variance head predicts heteroscedastic velocity uncertainty. Propagating it through deterministic flow dynamics yields a spatial uncertainty map for each generated sample.</p></div>
+      <div class="method-part-heading"><h3 id="quantification-title">Uncertainty quantification</h3><p>A lightweight variance head predicts heteroscedastic velocity uncertainty. Propagating it through deterministic flow dynamics yields a spatial uncertainty map for each generated sample.</p></div>
       <figure class="method-figure" aria-labelledby="method-figure-caption">
         <div class="method-pipeline">
           <div class="pipeline-stage prediction-stage">
@@ -82,34 +109,73 @@
         </div>
         <figcaption id="method-figure-caption">The mean state <span data-formula="mean-state-t"><img class="math-inline" src="assets/math/mean-state-t.svg" alt="Mean state x bar t" style="width:0.86968em;height:0.75805em;vertical-align:-0.15641em"></span> follows deterministic flow dynamics; velocity uncertainty is propagated into the state variance <span data-formula="state-variance-t"><img class="math-inline" src="assets/math/state-variance-t.svg" alt="Propagated state variance at time t" style="width:2.94310em;height:0.99626em;vertical-align:-0.24907em"></span>. Trajectory and uncertainty ellipses are schematic. Images are actual ImageNet-256 outputs.</figcaption>
       </figure>
-      <div class="quantification-equations">
-        <div class="quantification-equation"><h4>Mean dynamics</h4><div class="typeset-equation" data-display-formula="mean-dynamics"><img class="equation-image" src="assets/math/mean-dynamics.svg" alt="Time derivative of the mean state equals the predicted mean velocity evaluated at that mean state" width="95" height="35"></div></div>
-        <div class="quantification-equation"><h4>Variance propagation</h4><div class="typeset-equation" data-display-formula="variance-propagation"><img class="equation-image" src="assets/math/variance-propagation.svg" alt="Approximate state variance update equals the current variance plus squared velocity uncertainty times the time step squared, plus twice the time step times state velocity covariance" width="441" height="24"></div></div>
+      <div class="method-explanation">
+        <section aria-labelledby="training-title">
+          <h4 id="training-title">Learning velocity uncertainty</h4>
+          <p>UA-Flow adds a lightweight variance head to the velocity network. At each state and time, the network predicts a velocity mean and an element-wise variance, defining a Gaussian velocity model:</p>
+          <div class="typeset-equation method-equation" data-display-formula="velocity-model"><img class="equation-image" src="assets/math/velocity-model.svg" alt="The velocity model equals its learned mean plus element-wise standard deviation times standard Gaussian noise" width="344" height="20"></div>
+          <p>The predicted variance represents local velocity uncertainty. To train this model, we sample a data endpoint and an intermediate state along the flow-matching probability path. Since the true marginal velocity is unavailable, we use the known endpoint-conditioned target velocity in a corrected Gaussian negative log-likelihood:</p>
+          <div class="typeset-equation method-equation" data-display-formula="training-loss"><img class="equation-image" src="assets/math/training-loss.svg" alt="The conditional uncertainty-aware flow matching loss is the expected Gaussian negative log-likelihood of the conditional velocity target with an element-wise correction U in the squared-residual numerator" width="534" height="53"></div>
+          <p>The squared residual trains the velocity mean, while the variance sets the residual’s weight and is regularized by the log term. The correction <span data-formula="training-correction-symbol"><img class="math-inline" src="assets/math/training-correction-symbol.svg" alt="Conditional-to-marginal training correction U t" style="width:0.94523em;height:0.83686em;vertical-align:-0.15641em"></span> accounts for the difference between conditional and marginal velocity targets:</p>
+          <div class="typeset-equation method-equation" data-display-formula="training-correction"><img class="equation-image" src="assets/math/training-correction.svg" alt="The correction equals squared estimated marginal velocity minus squared conditional target velocity, element-wise" width="256" height="19"></div>
+          <p>Here, <span data-formula="marginal-estimate"><img class="math-inline" src="assets/math/marginal-estimate.svg" alt="Mini-batch estimate of the true marginal velocity" style="width:2.55189em;height:0.99626em;vertical-align:-0.24907em"></span> is a mini-batch estimate of the marginal velocity, formed by averaging conditional velocities with weights proportional to their conditional path densities. The correction yields an approximate training objective for the marginal velocity discrepancy.</p>
+        </section>
+        <section aria-labelledby="propagation-title">
+          <h4 id="propagation-title">From velocity uncertainty to sample uncertainty</h4>
+          <p>For each generated sample, we draw and then fix an initial state. We initialize the mean at that state and set <span data-formula="initial-variance"><img class="math-inline" src="assets/math/initial-variance.svg" alt="Initial state variance equals zero" style="width:5.01297em;height:0.99626em;vertical-align:-0.24907em"></span>, so the propagated uncertainty reflects velocity uncertainty for this fixed starting point. The mean follows the learned flow:</p>
+          <div class="typeset-equation method-equation" data-display-formula="mean-dynamics"><img class="equation-image" src="assets/math/mean-dynamics.svg" alt="Time derivative of the mean state equals the predicted mean velocity evaluated at that mean state" width="95" height="35"></div>
+          <p>Alongside the mean, we update the element-wise state variance using an Euler approximation:</p>
+          <div class="typeset-equation method-equation" data-display-formula="variance-propagation"><img class="equation-image" src="assets/math/variance-propagation.svg" alt="Approximate state variance update equals the current variance plus squared velocity uncertainty times the time step squared, plus twice the time step times state velocity covariance" width="441" height="24"></div>
+          <p>The squared standard-deviation term adds local velocity uncertainty. The state–velocity covariance term captures how existing state uncertainty interacts with the local sensitivity of the learned velocity field. UA-Flow approximates this covariance using a first-order linearization and Hutchinson’s diagonal estimator, computed with Jacobian-vector products.</p>
+          <p>At the endpoint, <span data-formula="mean-state-1"><img class="math-inline" src="assets/math/mean-state-1.svg" alt="Mean endpoint state x bar one" style="width:0.93454em;height:0.75107em;vertical-align:-0.14944em"></span> is the generated sample and <span data-formula="state-variance-1"><img class="math-inline" src="assets/math/state-variance-1.svg" alt="Propagated endpoint state variance" style="width:3.03927em;height:0.99626em;vertical-align:-0.24907em"></span> is its spatial uncertainty map. Keeping the map localizes uncertain regions; aggregating it gives a scalar score for ranking and filtering samples.</p>
+        </section>
       </div>
-      <p class="quantification-note"><strong>Sample scoring.</strong> Aggregate endpoint uncertainty to rank and filter generated samples, or retain the map to localize uncertain regions. UA-Flow can be fine-tuned from a pretrained flow matching model.</p>
       </section>
 
       <section class="method-part guidance-method" id="guidance" aria-labelledby="guidance-title">
-        <div class="method-part-heading"><p class="eyebrow">GUIDE DURING SAMPLING</p><h3 id="guidance-title">Uncertainty-aware guidance</h3><p>Use the predicted velocity uncertainty at the current state to modify sampling. UG steers the trajectory; UCFG adapts the strength of classifier-free guidance.</p></div>
+        <div class="method-part-heading"><h3 id="guidance-title">Uncertainty-aware guidance</h3><p>Use the predicted velocity uncertainty at the current state to modify sampling. UG steers the trajectory; UCFG adapts the strength of classifier-free guidance.</p></div>
         <div class="guidance-methods">
           <article class="guidance-method-card">
             <div class="guidance-card-heading"><span class="guidance-acronym">UG</span><h4>Steer toward lower uncertainty</h4></div>
             <figure><img src="assets/uncertainty-guidance.svg" width="400" height="220" alt="At the current state, UG adds an uncertainty-gradient correction to the base velocity. The resulting velocity steers toward a region of lower predicted uncertainty."><figcaption><span class="guidance-legend-item"><i class="base-velocity-key" aria-hidden="true"></i>Base velocity</span><span class="guidance-legend-item"><i class="correction-key" aria-hidden="true"></i>UG correction</span><span class="guidance-legend-item"><i class="guided-velocity-key" aria-hidden="true"></i>Guided velocity</span></figcaption></figure>
-            <div class="guidance-equation typeset-equation" data-display-formula="ug-velocity"><img class="equation-image" src="assets/math/ug-velocity.svg" alt="UG adds a scaled state gradient of the variance objective to the predicted velocity mean" width="308" height="22"></div>
-            <p>Define a function <em>f</em> that favors lower velocity variance, then add its state gradient to the mean velocity. The scale <span data-formula="ug-strength"><img class="math-inline" src="assets/math/ug-strength.svg" alt="UG guidance strength" style="width:0.68842em;height:0.45131em;vertical-align:-0.01096em"></span> controls the correction strength; <span data-formula="path-coefficient"><img class="math-inline" src="assets/math/path-coefficient.svg" alt="Path dependent coefficient b t" style="width:0.69257em;height:0.84782em;vertical-align:-0.15641em"></span> depends on the probability path.</p>
           </article>
           <article class="guidance-method-card">
             <div class="guidance-card-heading"><span class="guidance-acronym">UCFG</span><h4>Adapt the guidance scale</h4></div>
             <figure><img src="assets/adaptive-guidance.svg" width="400" height="220" alt="Conditional and unconditional velocity standard deviations determine the scale that minimizes approximate guided velocity variance. Clamp this scale at lambda max and recompute for every sample at every step."><figcaption>One adaptive scale per sample, recomputed at every step.</figcaption></figure>
-            <div class="guidance-equation typeset-equation" data-display-formula="ucfg-velocity"><img class="equation-image" src="assets/math/ucfg-velocity.svg" alt="UCFG extrapolates conditional and unconditional mean velocities using the adaptive guidance scale lambda star" width="379" height="22"></div>
-            <p>Choose <span data-formula="lambda-opt"><img class="math-inline" src="assets/math/lambda-opt.svg" alt="Nonnegative optimal guidance scale" style="width:3.56607em;height:0.97614em;vertical-align:-0.28473em"></span> to minimize the approximate variance of the extrapolated velocity. Cap it at <span data-formula="lambda-max"><img class="math-inline" src="assets/math/lambda-max.svg" alt="Maximum guidance scale" style="width:2.03307em;height:0.84782em;vertical-align:-0.15641em"></span>, adapting the CFG scale to the predicted conditional and unconditional uncertainties.</p>
           </article>
         </div>
-        <p class="guidance-composition"><strong>Using UG + UCFG together.</strong> UCFG first sets the guided velocity mean and variance. UG then adds a gradient correction computed from that guided variance. The vector diagram is schematic.</p>
+        <div class="method-explanation guidance-explanation">
+          <section aria-labelledby="ug-text-title">
+            <h4 id="ug-text-title">Uncertainty-aware guidance (UG)</h4>
+            <p>UG uses the predicted velocity variance at the current mean state to steer sampling toward lower-uncertainty regions. We define a scalar objective that increases as velocity variance decreases.
+              Taking the gradient of this objective with respect to the current state gives a correction to the velocity mean:</p>
+            <div class="typeset-equation method-equation" data-display-formula="ug-velocity"><img class="equation-image" src="assets/math/ug-velocity.svg" alt="UG adds a scaled state gradient of the variance objective to the predicted velocity mean" width="308" height="22"></div>
+            <p>The scale <span data-formula="ug-strength"><img class="math-inline" src="assets/math/ug-strength.svg" alt="UG guidance strength" style="width:0.68842em;height:0.45131em;vertical-align:-0.01096em"></span> controls the strength of the correction, and <span data-formula="path-coefficient"><img class="math-inline" src="assets/math/path-coefficient.svg" alt="Path dependent coefficient b t" style="width:0.69257em;height:0.84782em;vertical-align:-0.15641em"></span> is determined by the flow-matching probability path.</p>
+          </section>
+          <section aria-labelledby="ucfg-text-title">
+            <h4 id="ucfg-text-title">Uncertainty-aware classifier-free guidance (UCFG)</h4>
+            <p>UCFG adapts classifier-free guidance using the conditional and unconditional velocity predictions from the same network. Let <span data-formula="conditional-sigma"><img class="math-inline" src="assets/math/conditional-sigma.svg" alt="Conditional velocity standard deviation" style="width:1.49739em;height:1.29087em;vertical-align:-0.38856em"></span> and <span data-formula="unconditional-sigma"><img class="math-inline" src="assets/math/unconditional-sigma.svg" alt="Unconditional velocity standard deviation" style="width:1.67452em;height:1.28320em;vertical-align:-0.38089em"></span> denote their element-wise standard deviations, evaluated at the current mean state. Under a strong-correlation approximation between these velocity predictions, the variance of the extrapolated velocity is:</p>
+            <div class="typeset-equation method-equation" data-display-formula="ucfg-variance"><img class="equation-image" src="assets/math/ucfg-variance.svg" alt="Under a strong-correlation approximation, guided velocity variance is the element-wise square of one plus lambda times conditional standard deviation minus lambda times unconditional standard deviation" width="330" height="25"></div>
+            <p>For each sample, we choose one nonnegative scale that minimizes the sum of these coordinate-wise variances, then cap it at <span data-formula="lambda-max"><img class="math-inline" src="assets/math/lambda-max.svg" alt="Maximum guidance scale" style="width:2.03307em;height:0.84782em;vertical-align:-0.15641em"></span>:</p>
+            <div class="typeset-equation method-equation" data-display-formula="ucfg-selection"><img class="equation-image" src="assets/math/ucfg-selection.svg" alt="Choose the nonnegative lambda minimizing total approximate guided velocity variance for one sample, and cap the chosen scale at lambda max" width="523" height="47"></div>
+            <p>The resulting adaptive scale replaces the fixed CFG scale in the guided mean velocity:</p>
+            <div class="typeset-equation method-equation" data-display-formula="ucfg-velocity"><img class="equation-image" src="assets/math/ucfg-velocity.svg" alt="UCFG extrapolates conditional and unconditional mean velocities using the adaptive guidance scale lambda star" width="379" height="22"></div>
+          </section>
+          <p><strong>Combining UG and UCFG.</strong> At each step, UCFG first sets the guided velocity mean and its approximate variance. UG then differentiates the uncertainty objective using that guided variance and adds its correction to the guided mean.</p>
+        </div>
       </section>
+    </section>
 
-      <section class="qualitative-results" aria-labelledby="qualitative-title">
-        <div class="method-part-heading"><h3 id="qualitative-title">Qualitative comparison with baselines</h3><p>Uncertainty maps from UA-Flow, <a href="https://openaccess.thecvf.com/content/WACV2025/html/De_Vita_Diffusion_Model_Guided_Sampling_with_Pixel-Wise_Aleatoric_Uncertainty_Estimation_WACV_2025_paper.html">AU (De Vita &amp; Belagiannis, 2025)</a>, and <a href="https://arxiv.org/abs/2310.11142">BayesDiff (Kou et al., 2024)</a>.</p></div>
+    <section class="section container results-section" id="results" aria-labelledby="results-title">
+      <div class="section-heading"><h2 id="results-title">Results</h2><p>We present ImageNet-256 results here. Results for ImageNet-128 and CIFAR-10 are in the <a href="https://arxiv.org/pdf/2602.10326">main manuscript</a></div>
+
+      <section class="result-study" id="filtering-results" aria-labelledby="filtering-title" data-paper-section="4.2">
+        <div class="result-study-heading"><h3 id="filtering-title">Filtering images with high uncertainty</h3></div>
+        <p>We generate 100,000 ImageNet-256 images without guidance, rank them by uncertainty, and remove the most uncertain 10%–50%. At each filtering ratio, metrics use 50,000 randomly selected retained images and 50,000 reference images. For element-wise uncertainty maps, the score is the mean of the highest-uncertainty 10% of elements; <a href="https://proceedings.mlr.press/v286/jazbec25a.html">GenUnc</a> and UA-Flow + CLIP instead use CLIP-space scores.</p>
+        <figure class="paper-figure"><a href="assets/filtering-imagenet256.webp" aria-label="Open the full-resolution ImageNet-256 filtering results"><img src="assets/filtering-imagenet256.webp" alt="ImageNet-256 FID, precision and recall versus filtering ratio, comparing UA-Flow, UA-Flow plus CLIP, GenUnc, AU and BayesDiff. UA-Flow filtering improves FID and precision while reducing recall." loading="lazy" width="1800" height="560"></a><figcaption><strong>Uncertainty-based filtering on ImageNet-256.</strong> At each filtering ratio, high-uncertainty images are removed; metrics use 50,000 samples from the remainder. Higher fidelity comes with reduced coverage.</figcaption></figure>
+        <p>On ImageNet-256, UA-Flow achieves lower FID and higher precision after filtering than <a href="https://openaccess.thecvf.com/content/WACV2025/html/De_Vita_Diffusion_Model_Guided_Sampling_with_Pixel-Wise_Aleatoric_Uncertainty_Estimation_WACV_2025_paper.html">AU</a> and <a href="https://arxiv.org/abs/2310.11142">BayesDiff</a>. Increasing the filtering ratio raises precision while reducing recall.</p>
+      <section class="qualitative-results filtering-maps" aria-labelledby="qualitative-title">
+        <div class="method-part-heading"><h4 id="qualitative-title">Spatial uncertainty maps</h4><p>Uncertainty maps from UA-Flow, <a href="https://openaccess.thecvf.com/content/WACV2025/html/De_Vita_Diffusion_Model_Guided_Sampling_with_Pixel-Wise_Aleatoric_Uncertainty_Estimation_WACV_2025_paper.html">AU (De Vita &amp; Belagiannis, 2025)</a>, and <a href="https://arxiv.org/abs/2310.11142">BayesDiff (Kou et al., 2024)</a>.</p></div>
         <figure class="baseline-comparison-figure">
           <div class="baseline-panels" role="group" tabindex="0" aria-label="Uncertainty-map comparisons across three datasets; scroll horizontally on small screens">
             <figure class="baseline-panel"><a class="figure-image-link" href="assets/uncertainty-comparison-cifar10.webp" aria-label="Open the CIFAR-10 comparison at full resolution"><img src="assets/uncertainty-comparison-cifar10.webp" width="1600" height="1280" alt="CIFAR-10 generated samples, followed by UA-Flow, AU, and BayesDiff uncertainty maps." loading="lazy"></a><figcaption>CIFAR-10 <span>Pixel space</span></figcaption></figure>
@@ -120,11 +186,55 @@
           <figcaption><strong>Uncertainty maps from UA-Flow, <a href="https://openaccess.thecvf.com/content/WACV2025/html/De_Vita_Diffusion_Model_Guided_Sampling_with_Pixel-Wise_Aleatoric_Uncertainty_Estimation_WACV_2025_paper.html">AU</a>, and <a href="https://arxiv.org/abs/2310.11142">BayesDiff</a> on generated samples.</strong> Brighter values indicate higher uncertainty; maps are normalized per image. UA-Flow localizes high-uncertainty regions, whereas AU often produces inverted patterns and BayesDiff produces noisy maps.</figcaption>
         </figure>
       </section>
-    </section>
+        <p>Using the same CLIP-space aggregation as <a href="https://proceedings.mlr.press/v286/jazbec25a.html">GenUnc</a>, UA-Flow + CLIP recovers a comparable precision–recall tradeoff, with lower FID on ImageNet-256. Its sampling and uncertainty-quantification cost is approximately 3.5 times lower than GenUnc on this dataset.</p>
+      </section>
 
-    <section class="explore-section" id="explore" aria-labelledby="explore-title">
-      <div class="container">
-        <div class="section-heading"><p class="eyebrow">EXPLORE THE SAMPLES</p><h2 id="explore-title">Guidance sweep on ImageNet-256</h2><p>Adjust the guidance scales to compare generated images and their uncertainty.</p></div>
+      <section class="result-study" id="manifold-results" aria-labelledby="manifold-title" data-paper-section="4.3">
+        <div class="result-study-heading"><h3 id="manifold-title">Correlation of uncertainty with manifold support</h3></div>
+        <p>To test what uncertainty represents, we measure its Spearman rank correlation with <strong>distance to the data manifold</strong> and <strong><a href="https://openreview.net/forum?id=JTGimap_-F">rarity</a></strong>. We define distance to the data manifold as the feature-space distance from a generated sample to its third-nearest real reference sample (i.e., the nearest-neighbor distance with <em>k</em> = 3). Larger distances indicate weaker local support from the reference data. The <a href="https://openreview.net/forum?id=JTGimap_-F">rarity score (Han et al., 2023)</a> measures how atypical a generated sample is relative to the real data.</p>
+        <p>At the sample level, we compare the CLIP-space scores of UA-Flow + CLIP and <a href="https://proceedings.mlr.press/v286/jazbec25a.html">GenUnc</a>. At the patch level, we compare spatial uncertainty from UA-Flow, <a href="https://openaccess.thecvf.com/content/WACV2025/html/De_Vita_Diffusion_Model_Guided_Sampling_with_Pixel-Wise_Aleatoric_Uncertainty_Estimation_WACV_2025_paper.html">AU</a>, and <a href="https://arxiv.org/abs/2310.11142">BayesDiff</a>.</p>
+        <div class="results-table-wrapper correlation-table-wrapper">
+          <table class="correlation-table" data-paper-table="corr_manifold"><caption>ImageNet-256: Spearman correlation with distance to the data manifold and rarity <span>Sample-wise methods give one CLIP-space score per image; patch-wise methods retain spatial uncertainty.</span></caption><thead><tr><th scope="col" rowspan="2">Metric</th><th scope="colgroup" colspan="2">Sample-wise</th><th scope="colgroup" colspan="3">Patch-wise</th></tr><tr><th scope="col"><a href="https://proceedings.mlr.press/v286/jazbec25a.html">GenUnc</a></th><th scope="col">UA-Flow + CLIP</th><th scope="col"><a href="https://openaccess.thecvf.com/content/WACV2025/html/De_Vita_Diffusion_Model_Guided_Sampling_with_Pixel-Wise_Aleatoric_Uncertainty_Estimation_WACV_2025_paper.html">AU</a></th><th scope="col"><a href="https://arxiv.org/abs/2310.11142">BayesDiff</a></th><th scope="col">UA-Flow</th></tr></thead><tbody><tr class="dataset-start"><th scope="row">Distance to manifold</th><td>0.4190</td><td class="correlation-ours"><strong>0.4426</strong></td><td>−0.4719</td><td>0.1820</td><td class="correlation-ours"><strong>0.5404</strong></td></tr><tr><th scope="row"><a href="https://openreview.net/forum?id=JTGimap_-F">Rarity</a></th><td>0.3995</td><td class="correlation-ours"><strong>0.4165</strong></td><td>−0.4154</td><td>0.1422</td><td class="correlation-ours"><strong>0.4771</strong></td></tr></tbody></table>
+        </div>
+        <p class="table-context">ImageNet-256 uses 2 × 2 latent-space patches. Rarity is evaluated only for samples and patches classified as inside the data manifold. Bold values mark the strongest correlation within each comparison level.</p>
+        <p>On ImageNet-256, UA-Flow has the strongest patch-wise correlation with both metrics, and UA-Flow + CLIP has the strongest sample-wise correlation. These positive correlations associate higher uncertainty with greater distance from the data manifold and higher rarity.</p>
+      </section>
+
+      <section class="result-study" id="guidance-results" aria-labelledby="guidance-results-title" data-paper-section="4.4 4.5">
+        <div class="result-study-heading"><h3 id="guidance-results-title">Uncertainty-aware guidance and classifier-free guidance</h3></div>
+        <p>We evaluate uncertainty as a control signal in two settings: UG changes the sampling trajectory under a fixed CFG scale, and UCFG adapts the classifier-free guidance scale at each sampling step.</p>
+        <section class="guidance-result-part" aria-labelledby="ug-results-title">
+          <h4 id="ug-results-title">Uncertainty-aware guidance (UG)</h4>
+          <p>We sweep the UG strength from 0 to 50 under fixed CFG scales of 0, 0.25, and 0.5. These CFG + UG experiments keep the CFG scale fixed to isolate UG. Increasing UG generally raises precision and lowers recall. At nonzero CFG scales, FID reaches a minimum at an intermediate UG strength and then increases.</p>
+          <figure class="paper-figure"><a href="assets/ug-imagenet256.webp" aria-label="Open the full-resolution ImageNet-256 UG results"><img src="assets/ug-imagenet256.webp" width="1800" height="554" alt="ImageNet-256 FID, precision, and recall as UG strength increases under fixed CFG scales 0, 0.25, and 0.5. Precision generally increases while recall decreases." loading="lazy"></a><figcaption><strong>UG strength sweep on ImageNet-256.</strong> Increasing UG generally improves precision while reducing recall. With nonzero CFG, the lowest FID occurs at an intermediate UG strength.</figcaption></figure>
+          <figure class="paper-figure guidance-sample-figure" id="ug-qualitative-results">
+            <a href="assets/ug-qualitative-imagenet256.webp" aria-label="Open the full-resolution UG sample comparison"><img src="assets/ug-qualitative-imagenet256.webp" width="1950" height="510" alt="Four panels of ImageNet-256 samples. Within each panel, four columns use UG strengths 0, 10, 30, and 50 with a fixed class, random seed, and CFG scale 0.5. Stronger UG produces more class-consistent samples and less complex backgrounds." loading="lazy"></a>
+            <figcaption><strong>ImageNet-256 samples under different UG strengths at a fixed CFG scale of 0.5.</strong> Each panel uses a fixed class label and random seed; columns sweep <span data-formula="ug-scales"><img class="math-inline" src="assets/math/ug-scales.svg" alt="UG scale takes values zero, ten, thirty and fifty" style="width:7.69651em;height:0.99626em;vertical-align:-0.24907em"></span> from left to right. UG trades diversity for fidelity as guidance strength increases.</figcaption>
+          </figure>
+          <p>On ImageNet-256, UG lowers FID across these fixed-CFG settings. Qualitatively, stronger UG produces more class-consistent samples with less complex backgrounds, consistent with the measured fidelity–diversity tradeoff.</p>
+        </section>
+        <section class="guidance-result-part" aria-labelledby="ucfg-results-title">
+          <h4 id="ucfg-results-title">Uncertainty-aware classifier-free guidance (UCFG)</h4>
+          <p>We compare fixed CFG and adaptive projected guidance (<a href="https://arxiv.org/abs/2410.02416">APG</a>) with UCFG and APG + UCFG. Fixed CFG and APG use a fixed guidance scale; UCFG variants instead use a cap on the scale selected from predicted uncertainty at every step. At large fixed scales, recall falls sharply and CFG’s precision also declines. UCFG variants degrade more gradually as their guidance cap increases.</p>
+          <figure class="paper-figure"><a href="assets/guidance-imagenet256.webp" aria-label="Open the full-resolution ImageNet-256 guidance results"><img src="assets/guidance-imagenet256.webp" alt="ImageNet-256 FID, precision and recall for CFG, APG, UCFG and APG plus UCFG across guidance scales. UCFG variants degrade more gradually at large guidance caps." loading="lazy" width="1800" height="554"></a><figcaption><strong>Guidance sweep on ImageNet-256.</strong> The horizontal axis is the fixed scale <img class="math-inline" src="assets/math/fixed-scale.svg" alt="Fixed classifier-free guidance scale"> for CFG/APG, or the adaptive-scale cap <img class="math-inline" src="assets/math/lambda-max.svg" alt="Maximum guidance scale"> for UCFG variants.</figcaption></figure>
+          <div class="results-table-wrapper">
+        <table><caption>Best-FID guidance settings on ImageNet-256 <span>Mean ± standard deviation over 3 seeds. Lower FID is better.</span></caption><thead><tr><th scope="col">Method</th><th scope="col">ImageNet-256 FID ↓</th></tr></thead><tbody><tr><th scope="row">CFG</th><td>4.48 <span>± 0.01</span></td></tr><tr class="highlight-row"><th scope="row">UCFG</th><td>4.30 <span>± 0.01</span></td></tr><tr><th scope="row"><a href="https://arxiv.org/abs/2410.02416">APG</a></th><td>4.18 <span>± 0.01</span></td></tr><tr class="highlight-row"><th scope="row">APG + UCFG</th><td><strong>3.98</strong> <span>± 0.07</span></td></tr></tbody></table>
+      </div>
+          <p class="table-context">Each method uses its own lowest-FID guidance setting; values are the mean ± standard deviation over three seeds.</p>
+          <p>On ImageNet-256, UCFG improves the best FID over fixed CFG, while retaining higher recall at those settings. APG + UCFG gives the lowest FID among the compared guidance variants.</p>
+          <p><strong>How adaptive scales limit over-guidance.</strong> UCFG treats the maximum guidance scale as an upper bound. At every sampling step, it selects a scale for each sample by minimizing the approximate variance of the extrapolated velocity. This lets it choose a smaller correction when stronger extrapolation would increase predicted uncertainty.</p>
+          <figure class="paper-figure" id="adaptive-scale-results">
+            <a href="assets/adaptive-guidance-scales-imagenet256.webp" aria-label="Open the full-resolution adaptive guidance scale distributions"><img src="assets/adaptive-guidance-scales-imagenet256.webp" width="1950" height="686" alt="Two violin plots of adaptive guidance scales on ImageNet-256: UCFG on the left and APG plus UCFG on the right. Distributions across 1,000 samples are shown every five sampling steps, with orange means and green medians. Scales vary across samples and generally become larger later in sampling." loading="lazy"></a>
+            <figcaption><strong>Distributions of the adaptive guidance scale across sampling steps on ImageNet-256.</strong> Violin plots use 1,000 generated samples, recorded every five steps, for UCFG (left) and APG + UCFG (right). Orange marks the mean; green marks the median. The selected scales tend to be smaller early in sampling and larger later.</figcaption>
+          </figure>
+          <p>The distributions show that UCFG-based methods vary guidance across samples and sampling steps. Their tendency to use smaller scales early suggests that adaptive scaling limits over-guidance while the sample is still coarse, which may help explain the smaller loss of recall at large guidance caps. In the qualitative comparison below, UCFG and APG + UCFG preserve global structure with less saturation under large caps, while large fixed scales in CFG and APG produce oversaturation or mode collapse.</p>
+          <figure class="paper-figure guidance-sample-figure" id="ucfg-qualitative-results">
+            <a href="assets/ucfg-qualitative-imagenet256.webp" aria-label="Open the full-resolution classifier-free guidance sample comparison"><img src="assets/ucfg-qualitative-imagenet256.webp" width="1990" height="718" alt="Two ImageNet-256 sample panels, each with four labeled rows: CFG, APG, UCFG, and APG plus UCFG. Five columns increase the fixed guidance scale or adaptive guidance cap over 1, 2, 5, 10, and 20. The uncertainty-aware variants preserve structure more robustly at high guidance caps." loading="lazy"></a>
+            <figcaption><strong>ImageNet-256 samples under increasing classifier-free guidance scales.</strong> Rows show CFG, APG, UCFG, and APG + UCFG from top to bottom. Columns sweep the fixed scale <span data-formula="fixed-scale"><img class="math-inline" src="assets/math/fixed-scale.svg" alt="Fixed classifier-free guidance scale" style="width:0.54595em;height:0.70436em;vertical-align:-0.01295em"></span> or adaptive-scale cap <span data-formula="lambda-max"><img class="math-inline" src="assets/math/lambda-max.svg" alt="Maximum guidance scale" style="width:2.03307em;height:0.84782em;vertical-align:-0.15641em"></span> over 1, 2, 5, 10, and 20 from left to right. Compared with CFG and APG at large fixed scales, UCFG and APG + UCFG preserve structure more robustly under large guidance caps.</figcaption>
+          </figure>
+        </section>
+        <section class="guidance-sweep" id="explore" aria-labelledby="explore-title">
+          <div class="method-part-heading"><p class="eyebrow">INTERACTIVE GUIDANCE SWEEP</p><h4 id="explore-title">UG and UCFG on ImageNet-256</h4><p>Compare the saved samples and latent uncertainty maps across both guidance scales.</p></div>
         <div class="explorer" id="explorer">
           <div class="example-picker" role="group" aria-label="Choose an ImageNet example"><button type="button" class="example-button active" data-example="guinea-pig" aria-pressed="true">Guinea pig</button><button type="button" class="example-button" data-example="goldfinch" aria-pressed="false">Goldfinch</button><button type="button" class="example-button" data-example="rocking-chair" aria-pressed="false">Rocking chair</button><button type="button" class="example-button" data-example="church" aria-pressed="false">Church</button></div>
           <div class="explorer-body">
@@ -144,25 +254,10 @@
         </div>
         <p class="figure-note">Viewer of precomputed ImageNet-256 experiments; each example uses a fixed initial noise seed.<br>Uncertainty is shown in latent space. These maps visualize predicted uncertainty, not measured image error.</p>
         <noscript><p class="noscript-note">Enable JavaScript to explore the saved guidance sweeps. The default sample and all research content remain visible.</p></noscript>
-      </div>
-    </section>
 
-    <section class="section container" id="results" aria-labelledby="results-title">
-      <div class="section-heading"><p class="eyebrow">EXPERIMENTAL RESULTS</p><h2 id="results-title">Image generation results</h2><p>Evaluated on CIFAR-10, ImageNet-128, and ImageNet-256.</p></div>
-      <article class="result-block">
-        <h3>A reliability signal for filtering</h3>
-        <p>Removing the most uncertain samples improves FID and precision on ImageNet. UA-Flow gives a more consistent fidelity signal than element-wise uncertainty baselines, while CLIP-space aggregation is competitive with <a href="https://proceedings.mlr.press/v286/jazbec25a.html">GenUnc (Jazbec et al., 2025)</a> at lower computational cost.</p>
-        <figure class="paper-figure"><a href="assets/filtering-imagenet256.webp" aria-label="Open the full-resolution ImageNet-256 filtering results"><img src="assets/filtering-imagenet256.webp" alt="ImageNet-256 FID, precision and recall versus filtering ratio, comparing UA-Flow, UA-Flow plus CLIP, GenUnc, AU and BayesDiff. UA-Flow filtering improves FID and precision while reducing recall." loading="lazy" width="1800" height="560"></a><figcaption><strong>Uncertainty-based filtering on ImageNet-256.</strong> At each filtering ratio, high-uncertainty images are removed; metrics use 50,000 samples from the remainder. Higher fidelity comes with reduced coverage.</figcaption></figure>
-      </article>
-      <article class="result-block">
-        <h3>Adaptive guidance under strong conditioning</h3>
-        <p>Fixed classifier-free guidance can degrade at large scales. UCFG selects a scale from predicted uncertainty at each step, improving the best FID over CFG and limiting degradation as the guidance cap increases.</p>
-        <figure class="paper-figure"><a href="assets/guidance-imagenet256.webp" aria-label="Open the full-resolution ImageNet-256 guidance results"><img src="assets/guidance-imagenet256.webp" alt="ImageNet-256 FID, precision and recall for CFG, APG, UCFG and APG plus UCFG across guidance scales. UCFG variants degrade more gradually at large guidance caps." loading="lazy" width="1800" height="554"></a><figcaption><strong>Guidance sweep on ImageNet-256.</strong> The horizontal axis is the fixed scale <img class="math-inline" src="assets/math/fixed-scale.svg" alt="Fixed classifier-free guidance scale"> for CFG/APG, or the adaptive-scale cap <img class="math-inline" src="assets/math/lambda-max.svg" alt="Maximum guidance scale"> for UCFG variants.</figcaption></figure>
-      </article>
-      <div class="results-table-wrapper">
-        <table><caption>Best-FID guidance settings on ImageNet <span>Mean ± standard deviation over 3 seeds. Lower FID is better.</span></caption><thead><tr><th scope="col">Method</th><th scope="col">ImageNet-128 FID ↓</th><th scope="col">ImageNet-256 FID ↓</th></tr></thead><tbody><tr><th scope="row">CFG</th><td>5.26 <span>± 0.03</span></td><td>4.48 <span>± 0.01</span></td></tr><tr class="highlight-row"><th scope="row">UCFG</th><td>4.82 <span>± 0.04</span></td><td>4.30 <span>± 0.01</span></td></tr><tr><th scope="row">APG</th><td>5.06 <span>± 0.02</span></td><td>4.18 <span>± 0.01</span></td></tr><tr class="highlight-row"><th scope="row">APG + UCFG</th><td><strong>4.78</strong> <span>± 0.01</span></td><td><strong>3.98</strong> <span>± 0.07</span></td></tr></tbody></table>
-      </div>
-      <p class="results-note">Each method is evaluated at its own lowest-FID guidance setting. Results and figures follow the local manuscript; see the <a href="https://arxiv.org/abs/2602.10326">paper</a> for experimental details. Filtering and UG induce a fidelity–diversity tradeoff; FID gains are not universal across datasets.</p>
+        </section>
+      </section>
+      <p class="results-note">Results and figures follow the local manuscript; see the <a href="https://arxiv.org/abs/2602.10326">paper</a> for experimental details.</p>
     </section>
 
     <section class="citation-section" id="citation" aria-labelledby="citation-title"><div class="reading-width"><div class="citation-heading"><h2 id="citation-title">BibTeX</h2><button type="button" class="copy-button" id="copy-citation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h12v13H8zM16 8V3H3v13h5"/></svg><span>Copy citation</span></button></div><pre><code id="bibtex">@article{han2026uaflow,

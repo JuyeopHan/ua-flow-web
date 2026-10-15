@@ -118,5 +118,50 @@
     "id": "fixed-scale",
     "tex": "\\lambda",
     "alt": "Fixed classifier-free guidance scale"
+  },
+  {
+    "id": "velocity-model",
+    "tex": "u_t^\\theta(\\mathbf{x}_t)=\\bar{u}_t^\\theta(\\mathbf{x}_t)+\\sigma_t^\\theta(\\mathbf{x}_t)\\odot\\boldsymbol{\\epsilon},\\qquad \\boldsymbol{\\epsilon}\\sim\\mathcal{N}(\\mathbf{0},I).",
+    "alt": "The velocity model equals its learned mean plus element-wise standard deviation times standard Gaussian noise"
+  },
+  {
+    "id": "training-loss",
+    "tex": "\\mathcal{L}_{\\mathrm{CUFM}}(\\theta)=\\mathbb{E}_{t,\\mathbf{x}_1,\\mathbf{x}_t}\\!\\left[\\frac{\\big(\\bar{u}_t^\\theta(\\mathbf{x}_t)-u_t(\\mathbf{x}_t\\mid\\mathbf{x}_1)\\big)^2+U_t(\\mathbf{x}_t,\\mathbf{x}_1)}{2\\big(\\sigma_t^\\theta(\\mathbf{x}_t)\\big)^2}+\\log\\sigma_t^\\theta(\\mathbf{x}_t)\\right].",
+    "alt": "The conditional uncertainty-aware flow matching loss is the expected Gaussian negative log-likelihood of the conditional velocity target with an element-wise correction U in the squared-residual numerator"
+  },
+  {
+    "id": "training-correction-symbol",
+    "tex": "U_t",
+    "alt": "Conditional-to-marginal training correction U t"
+  },
+  {
+    "id": "training-correction",
+    "tex": "U_t(\\mathbf{x}_t,\\mathbf{x}_1)=\\hat{u}_t(\\mathbf{x}_t)^2-u_t(\\mathbf{x}_t\\mid\\mathbf{x}_1)^2.",
+    "alt": "The correction equals squared estimated marginal velocity minus squared conditional target velocity, element-wise"
+  },
+  {
+    "id": "marginal-estimate",
+    "tex": "\\hat{u}_t(\\mathbf{x}_t)",
+    "alt": "Mini-batch estimate of the true marginal velocity"
+  },
+  {
+    "id": "ug-objective",
+    "tex": "f(\\boldsymbol{\\sigma}^2)=-\\left(\\frac{1}{n}\\sum_{i=1}^n\\sigma_i^2\\right)^2.",
+    "alt": "UG objective equals the negative square of the mean element-wise velocity variance"
+  },
+  {
+    "id": "ucfg-variance",
+    "tex": "\\operatorname{Var}\\!\\big[u_{t,\\mathrm{CFG}}^\\theta(\\mathbf{x}_t\\mid y)\\big]\\approx\\big((1+\\lambda)\\sigma_{t,y}^\\theta-\\lambda\\sigma_{t,\\varnothing}^\\theta\\big)^2.",
+    "alt": "Under a strong-correlation approximation, guided velocity variance is the element-wise square of one plus lambda times conditional standard deviation minus lambda times unconditional standard deviation"
+  },
+  {
+    "id": "ucfg-selection",
+    "tex": "\\lambda_{\\mathrm{opt}}=\\underset{\\lambda\\geq0}{\\arg\\min}\\;\\sum_{i=1}^n\\big((1+\\lambda)\\sigma_{t,y,i}^\\theta-\\lambda\\sigma_{t,\\varnothing,i}^\\theta\\big)^2,\\qquad\\lambda^*=\\min(\\lambda_{\\mathrm{opt}},\\lambda_{\\max}).",
+    "alt": "Choose the nonnegative lambda minimizing total approximate guided velocity variance for one sample, and cap the chosen scale at lambda max"
+  },
+  {
+    "id": "null-condition",
+    "tex": "\\varnothing",
+    "alt": "Null or unconditional class condition"
   }
 ]
