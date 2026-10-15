@@ -234,26 +234,47 @@
           </figure>
         </section>
         <section class="guidance-sweep" id="explore" aria-labelledby="explore-title">
-          <div class="method-part-heading"><p class="eyebrow">INTERACTIVE GUIDANCE SWEEP</p><h4 id="explore-title">UG and UCFG on ImageNet-256</h4><p>Compare the saved samples and latent uncertainty maps across both guidance scales.</p></div>
+          <div class="method-part-heading"><p class="eyebrow">INTERACTIVE GUIDANCE SWEEP</p><h4 id="explore-title">UG and UCFG on ImageNet-256</h4><p>Compare all five samples and their latent uncertainty maps together. Both guidance controls apply to every example.</p></div>
         <div class="explorer" id="explorer">
-          <div class="example-picker" role="group" aria-label="Choose an ImageNet example"><button type="button" class="example-button active" data-example="guinea-pig" aria-pressed="true">Guinea pig</button><button type="button" class="example-button" data-example="goldfinch" aria-pressed="false">Goldfinch</button><button type="button" class="example-button" data-example="rocking-chair" aria-pressed="false">Rocking chair</button><button type="button" class="example-button" data-example="church" aria-pressed="false">Church</button></div>
-          <div class="explorer-body">
-            <div class="explorer-images">
-              <figure><div class="sprite" id="sample-frame" style="--col:2;--row:2"><img id="sample-image" src="assets/guinea-pig.webp" width="1550" height="1034" alt="Guinea pig generated with UG scale 30 and maximum UCFG scale 2" loading="lazy"></div><figcaption>Generated sample</figcaption></figure>
-              <figure><div class="sprite uncertainty" id="uncertainty-frame" style="--col:2;--row:2"><img id="uncertainty-image" src="assets/guinea-pig-uncertainty.webp" width="206" height="138" alt="Predicted latent uncertainty map for the selected guinea pig sample" loading="lazy"></div><figcaption>Latent uncertainty<span class="uncertainty-key"><i aria-hidden="true"></i>Low → High</span></figcaption></figure>
-            </div>
-            <div class="explorer-controls">
-              <p class="control-heading">Guidance settings</p>
+          <div class="sweep-controls" role="group" aria-label="Shared guidance settings for all five examples">
               <div class="range-control"><label for="ug-scale">Uncertainty guidance <span>w = <output id="ug-output" for="ug-scale">30</output></span></label><input type="range" id="ug-scale" min="0" max="3" step="1" value="2" aria-valuetext="30"><div class="range-ticks" aria-hidden="true"><span>0</span><span>10</span><span>30</span><span>50</span></div></div>
               <div class="range-control"><label for="ucfg-scale">Maximum UCFG <span>λ<sub>max</sub> = <output id="ucfg-output" for="ucfg-scale">2</output></span></label><input type="range" id="ucfg-scale" min="0" max="5" step="1" value="2" aria-valuetext="2"><div class="range-ticks" aria-hidden="true"><span>0</span><span>1</span><span>2</span><span>5</span><span>10</span><span>20</span></div></div>
-              <p class="control-explainer"><strong>UG</strong> steers toward lower predicted uncertainty. <strong>UCFG</strong> adapts the classifier-free guidance scale, bounded by λ<sub>max</sub>.</p>
               <button class="reset-button" type="button" id="reset-explorer"><span aria-hidden="true">↺</span> Reset settings</button>
-            </div>
           </div>
-          <p class="explorer-status" id="explorer-status" role="status" aria-live="polite">Guinea pig · UG 30 · Maximum UCFG 2</p>
+          <div class="explorer-body">
+            <div class="sweep-gallery">
+              <article class="sweep-example" data-example="guinea-pig" aria-labelledby="sweep-guinea-pig-title">
+                <h5 id="sweep-guinea-pig-title">Guinea pig</h5>
+                <figure><div class="sprite" style="--col:2;--row:2"><img data-sample-image src="assets/guinea-pig.webp" width="1550" height="1034" alt="Guinea pig generated with UG scale 30 and maximum UCFG scale 2" loading="lazy"></div><figcaption>Generated sample</figcaption></figure>
+                <figure><div class="sprite uncertainty" style="--col:2;--row:2"><img data-uncertainty-image src="assets/guinea-pig-uncertainty.webp" width="206" height="138" alt="Predicted latent uncertainty for guinea pig, UG 30, maximum UCFG 2; brighter indicates higher uncertainty" loading="lazy"></div><figcaption>Latent uncertainty</figcaption></figure>
+              </article>
+              <article class="sweep-example" data-example="goldfinch" aria-labelledby="sweep-goldfinch-title">
+                <h5 id="sweep-goldfinch-title">Goldfinch</h5>
+                <figure><div class="sprite" style="--col:2;--row:2"><img data-sample-image src="assets/goldfinch.webp" width="1550" height="1034" alt="Goldfinch generated with UG scale 30 and maximum UCFG scale 2" loading="lazy"></div><figcaption>Generated sample</figcaption></figure>
+                <figure><div class="sprite uncertainty" style="--col:2;--row:2"><img data-uncertainty-image src="assets/goldfinch-uncertainty.webp" width="206" height="138" alt="Predicted latent uncertainty for goldfinch, UG 30, maximum UCFG 2; brighter indicates higher uncertainty" loading="lazy"></div><figcaption>Latent uncertainty</figcaption></figure>
+              </article>
+              <article class="sweep-example" data-example="banana" aria-labelledby="sweep-banana-title">
+                <h5 id="sweep-banana-title">Banana</h5>
+                <figure><div class="sprite" style="--col:2;--row:2"><img data-sample-image src="assets/banana.webp" width="1550" height="1034" alt="Banana generated with UG scale 30 and maximum UCFG scale 2" loading="lazy"></div><figcaption>Generated sample</figcaption></figure>
+                <figure><div class="sprite uncertainty" style="--col:2;--row:2"><img data-uncertainty-image src="assets/banana-uncertainty.webp" width="206" height="138" alt="Predicted latent uncertainty for banana, UG 30, maximum UCFG 2; brighter indicates higher uncertainty" loading="lazy"></div><figcaption>Latent uncertainty</figcaption></figure>
+              </article>
+              <article class="sweep-example" data-example="rocking-chair" aria-labelledby="sweep-rocking-chair-title">
+                <h5 id="sweep-rocking-chair-title">Rocking chair</h5>
+                <figure><div class="sprite" style="--col:2;--row:2"><img data-sample-image src="assets/rocking-chair.webp" width="1550" height="1034" alt="Rocking chair generated with UG scale 30 and maximum UCFG scale 2" loading="lazy"></div><figcaption>Generated sample</figcaption></figure>
+                <figure><div class="sprite uncertainty" style="--col:2;--row:2"><img data-uncertainty-image src="assets/rocking-chair-uncertainty.webp" width="206" height="138" alt="Predicted latent uncertainty for rocking chair, UG 30, maximum UCFG 2; brighter indicates higher uncertainty" loading="lazy"></div><figcaption>Latent uncertainty</figcaption></figure>
+              </article>
+              <article class="sweep-example" data-example="church" aria-labelledby="sweep-church-title">
+                <h5 id="sweep-church-title">Church</h5>
+                <figure><div class="sprite" style="--col:2;--row:2"><img data-sample-image src="assets/church.webp" width="1550" height="1034" alt="Church generated with UG scale 30 and maximum UCFG scale 2" loading="lazy"></div><figcaption>Generated sample</figcaption></figure>
+                <figure><div class="sprite uncertainty" style="--col:2;--row:2"><img data-uncertainty-image src="assets/church-uncertainty.webp" width="206" height="138" alt="Predicted latent uncertainty for church, UG 30, maximum UCFG 2; brighter indicates higher uncertainty" loading="lazy"></div><figcaption>Latent uncertainty</figcaption></figure>
+              </article>
+            </div>
+            <p class="uncertainty-key sweep-uncertainty-key"><span>Uncertainty:</span> Low <i aria-hidden="true"></i> High</p>
+          </div>
+          <p class="explorer-status" id="explorer-status" role="status" aria-live="polite">All five examples · UG 30 · Maximum UCFG 2</p>
         </div>
         <p class="figure-note">Viewer of precomputed ImageNet-256 experiments; each example uses a fixed initial noise seed.<br>Uncertainty is shown in latent space. These maps visualize predicted uncertainty, not measured image error.</p>
-        <noscript><p class="noscript-note">Enable JavaScript to explore the saved guidance sweeps. The default sample and all research content remain visible.</p></noscript>
+        <noscript><p class="noscript-note">Enable JavaScript to explore the saved guidance sweeps. All five default samples and uncertainty maps remain visible.</p></noscript>
 
         </section>
       </section>

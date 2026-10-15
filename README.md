@@ -34,12 +34,13 @@ The page is organized into **Abstract → Motivation → Method → Results**. T
 
 Results follow `section/experiments.tex` in manuscript order: **4.2 filtering**, **4.3 correlation with manifold support**, then **4.4 UG and 4.5 UCFG together**. The correlation table shows the ImageNet-256 subset of `tab:corr_manifold` and matches the 800px maximum width of the main text. The best-guidance FID table shows the ImageNet-256 column of `tab:cfg_scale`. Results prose and quantitative comparisons focus on ImageNet-256, with a link to the main manuscript for ImageNet-128 and CIFAR-10; the spatial uncertainty-map comparison retains all three datasets. The UG qualitative figure is 10% narrower than its previous width (828px maximum). The UG results show the paper’s qualitative comparison in place of the matched-CFG FID table; the UCFG results include the qualitative comparison of CFG, APG, UCFG, and APG + UCFG. Only the best-guidance FID table reports means and standard deviations over three seeds; each method uses its own best-FID guidance setting. The UCFG subsection includes adaptive-scale distributions from 1,000 samples every five steps, explains scale minimization and APG clipping/projection, and frames the early-step interpretation as a suggested explanation. APG links to its original paper. The interactive sweep is inside the combined guidance results.
 
-The interactive viewer selects **precomputed experimental samples**, not live model inference. Each example retains a fixed initial noise seed. UG scales are `[0, 10, 30, 50]`; maximum UCFG scales are `[0, 1, 2, 5, 10, 20]`.
+The interactive viewer selects **precomputed experimental samples**, not live model inference. The gallery shows guinea pig, goldfinch, banana, rocking chair, and church simultaneously, each paired with its uncertainty map. Shared UG and UCFG controls update all ten tiles together. Each example retains a fixed initial noise seed. UG scales are `[0, 10, 30, 50]`; maximum UCFG scales are `[0, 1, 2, 5, 10, 20]`.
 
 | Web asset | Manuscript source |
 | --- | --- |
 | `guinea-pig*.webp` | `figures/front/sample_001_label_338_seed_3783*` |
 | `goldfinch*.webp` | `figures/front/sample_003_label_11_seed_1423*` |
+| `banana*.webp` | `figures/front/sample_011_label_954_seed_41688*` |
 | `rocking-chair*.webp` | `figures/front/sample_002_label_765_seed_3783*` |
 | `church*.webp` | `figures/front/sample_000_label_497_seed_1423*` |
 | `figure1-guidance-sweep.webp` | Figure 1 in `root.pdf`, page 2, including original axes and subcaptions; the main caption is reproduced in HTML without figure numbering |
@@ -53,7 +54,7 @@ The interactive viewer selects **precomputed experimental samples**, not live mo
 | `ug-qualitative-imagenet256.webp` | Figure 5 in `root.pdf`, page 11: four panels from `figures/Guidance/sample_*_scales_0_10_30_50.png` |
 | `ucfg-qualitative-imagenet256.webp` | Figure 8 in `root.pdf`, page 13: two panels from `figures/CFG/sample_*_scales_1_2_5_10_20.png`, including the original method row labels |
 
-Class names follow the zero-based [PyTorch ImageNet label list](https://raw.githubusercontent.com/pytorch/hub/master/imagenet_classes.txt): class 11 is **goldfinch**, class 338 is **guinea pig**, class 497 is **church**, and class 765 is **rocking chair**. Asset names, viewer buttons, and accessible descriptions use these labels.
+Class names follow the zero-based [PyTorch ImageNet label list](https://raw.githubusercontent.com/pytorch/hub/master/imagenet_classes.txt): class 11 is **goldfinch**, class 338 is **guinea pig**, class 497 is **church**, class 765 is **rocking chair**, and class 954 is **banana**. Asset names, gallery headings, and accessible descriptions use these labels.
 
 The sprite viewer selects 256 × 256 generated image tiles and 32 × 32 latent uncertainty tiles with the original two-pixel grid spacing. Uncertainty maps are retained losslessly; brighter values indicate higher uncertainty. Paper plots are rasterized for web display and linked to their full-size versions.
 
